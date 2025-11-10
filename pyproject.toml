@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "mirro"
+version = "0.1.0"
+description = "A safe editing wrapper: edits a temp copy, compares, and saves original backup if changed."
+authors = ["Marco D'Aleo <marco@marcodaleo.com>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+homepage = "https://github.com/mdaleo404/mirro"
+repository = "https://github.com/mdaleo404/mirro"
+packages = [{include = "mirro", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+[tool.poetry.scripts]
+mirro = "mirro.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
