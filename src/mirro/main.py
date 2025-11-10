@@ -22,9 +22,8 @@ def backup_original(
     original_path: Path, original_content: str, backup_dir: Path
 ) -> Path:
     backup_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    uid = uuid.uuid4().hex[:8]
-    backup_name = f"{original_path.name}.orig.{timestamp}.{uid}.bak"
+    timestamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+    backup_name = f"{original_path.name}.orig.{timestamp}.bak"
     backup_path = backup_dir / backup_name
     backup_path.write_text(original_content, encoding="utf-8")
     return backup_path
