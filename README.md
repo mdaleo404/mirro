@@ -79,8 +79,15 @@ filename.ext.orig.20251110T174400.bak
 
 ## Installation
 
-**NOTE**: To use mirro with sudo, the path to mirro must be in the $PATH seen by root.
-Either install mirro as root (preferred), use sudo -E mirro, or add the $PATH to /etc/sudoers using its Defaults secure_path parameter.
+**NOTE:** To use `mirro` with `sudo`, the path to `mirro` must be in the `$PATH` seen by `root`.\
+Either:
+
+ * install `mirro` as `root` (_preferred_), or
+ * add the path to `mirro` to the `secure_path` parameter in `/etc/sudoers`. For example, where `/home/user/.local/bin` is where `mirro` is:
+
+``` bash
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/user/.local/bin"
+```
 
 Install via PyPI (preferred):
 ```
