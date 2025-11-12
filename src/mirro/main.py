@@ -50,7 +50,8 @@ def main():
         help="Backup directory",
     )
 
-    args = parser.parse_args()
+    # editor_extra_args are for passing straight to the EDITOR
+    args, editor_extra_args = parser.parse_known_args()
 
     editor = os.environ.get("EDITOR","nano")
     target = Path(args.file).expanduser().resolve()
@@ -81,7 +82,7 @@ def main():
     write_file(temp_path, original_content)
 
     # Launch editor
-    subprocess.call(editor_cmd + [str(temp_path)])
+    subprocess.call(editor_cmd + [str(temp_path)] + editor_extra_args)
 
     # Read edited
     edited_content = read_file(temp_path)
