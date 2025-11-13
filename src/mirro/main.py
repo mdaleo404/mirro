@@ -1,9 +1,17 @@
+import importlib.metadata
 import argparse
 import tempfile
 import subprocess
 import os
 from pathlib import Path
 import time
+
+
+def get_version():
+    try:
+        return importlib.metadata.version("mirro")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
 
 
 def read_file(path: Path) -> str:
@@ -16,7 +24,9 @@ def write_file(path: Path, content: str):
     path.write_text(content, encoding="utf-8")
 
 
-def backup_original(original_path: Path, original_content: str, backup_dir: Path) -> Path:
+def backup_original(
+    original_path: Path, original_content: str, backup_dir: Path
+) -> Path:
     backup_dir.mkdir(parents=True, exist_ok=True)
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     shortstamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
@@ -42,7 +52,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Safely edit a file with automatic original backup if changed."
     )
-    parser.add_argument("file", type=str, help="Path to file to edit")
+
     parser.add_argument(
         "--backup-dir",
         type=str,
@@ -50,12 +60,36 @@ def main():
         help="Backup directory",
     )
 
-    args = parser.parse_args()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"mirro {get_version()}",
+    )
 
-    editor = os.environ.get("EDITOR","nano")
-    target = Path(args.file).expanduser().resolve()
-    backup_dir = Path(args.backup_dir).expanduser().resolve()
+    # Parse only options. Leave everything else untouched.
+    args, positional = parser.parse_known_args()
+
+    # Flexible positional parsing
+    if not positional:
+        parser.error("the following arguments are required: file")
+
+    file_arg = None
+    editor_extra = []
+
+    for p in positional:
+        if file_arg is None and not p.startswith("+") and not p.startswith("-"):
+            file_arg = p
+        else:
+            editor_extra.append(p)
+
+    if file_arg is None:
+        parser.error("the following arguments are required: file")
+
+    editor = os.environ.get("EDITOR", "nano")
     editor_cmd = editor.split()
+
+    target = Path(file_arg).expanduser().resolve()
+    backup_dir = Path(args.backup_dir).expanduser().resolve()
 
     # Permission checks
     parent = target.parent
@@ -77,11 +111,13 @@ def main():
         delete=False, prefix="mirro-", suffix=target.suffix
     ) as tf:
         temp_path = Path(tf.name)
-    # Write prepopulated or original content to temp file
+
     write_file(temp_path, original_content)
 
-    # Launch editor
-    subprocess.call(editor_cmd + [str(temp_path)])
+    if "nano" in editor_cmd[0]:
+        subprocess.call(editor_cmd + editor_extra + [str(temp_path)])
+    else:
+        subprocess.call(editor_cmd + [str(temp_path)] + editor_extra)
 
     # Read edited
     edited_content = read_file(temp_path)

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mirro"
-version = "0.1.0"
+version = "0.2.0"
 description = "A safe editing wrapper: edits a temp copy, compares, and saves original backup if changed."
 authors = ["Marco D'Aleo <marco@marcodaleo.com>"]
 license = "GPL-3.0-or-later"
@@ -14,6 +14,10 @@ python = "^3.13"
 
 [tool.poetry.scripts]
 mirro = "mirro.main:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.1"
+pytest-cov = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]

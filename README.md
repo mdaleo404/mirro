@@ -26,6 +26,8 @@ Stop lying... 🥸
 
 - requires `sudo` only when actually needed
 
+- accepts most of your favourite editor's flags
+
 It’s simple, predictable, and hard to misuse.
 
 I mean... the only thing you need to remember is _to use it_.
@@ -100,3 +102,11 @@ git clone https://github.com/mdaleo404/mirro.git
 cd mirro/
 poetry install
 ```
+
+## How to run the tests
+
+- Clone this repository
+
+- Ensure you have Poetry installed
+
+- Run `poetry run pytest -vvvv --cov=mirro --cov-report=term-missing --disable-warnings`
