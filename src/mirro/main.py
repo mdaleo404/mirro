@@ -24,7 +24,9 @@ def write_file(path: Path, content: str):
     path.write_text(content, encoding="utf-8")
 
 
-def backup_original(original_path: Path, original_content: str, backup_dir: Path) -> Path:
+def backup_original(
+    original_path: Path, original_content: str, backup_dir: Path
+) -> Path:
     backup_dir.mkdir(parents=True, exist_ok=True)
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     shortstamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())

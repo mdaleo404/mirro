@@ -13,16 +13,16 @@ import mirro.main as mirro
 # get_version
 # ============================================================
 
+
 def test_get_version_found(monkeypatch):
-    monkeypatch.setattr(
-        mirro.importlib.metadata, "version", lambda _: "1.2.3"
-    )
+    monkeypatch.setattr(mirro.importlib.metadata, "version", lambda _: "1.2.3")
     assert mirro.get_version() == "1.2.3"
 
 
 def test_get_version_not_found(monkeypatch):
     def raiser(_):
         raise mirro.importlib.metadata.PackageNotFoundError
+
     monkeypatch.setattr(mirro.importlib.metadata, "version", raiser)
     assert mirro.get_version() == "unknown"
 
@@ -30,6 +30,7 @@ def test_get_version_not_found(monkeypatch):
 # ============================================================
 # read_file / write_file
 # ============================================================
+
 
 def test_read_file_exists(tmp_path):
     p = tmp_path / "x.txt"
@@ -51,20 +52,23 @@ def test_write_file(tmp_path):
 # backup_original
 # ============================================================
 
+
 def test_backup_original(tmp_path, monkeypatch):
     original_path = tmp_path / "test.txt"
     original_content = "ABC"
     backup_dir = tmp_path / "backups"
 
     # Freeze timestamps
-    monkeypatch.setattr(time, "gmtime", lambda: time.struct_time((2023,1,2,3,4,5,0,0,0)))
+    monkeypatch.setattr(
+        time, "gmtime", lambda: time.struct_time((2023, 1, 2, 3, 4, 5, 0, 0, 0))
+    )
     monkeypatch.setattr(
         time,
         "strftime",
         lambda fmt, _: {
             "%Y-%m-%d %H:%M:%S UTC": "2023-01-02 03:04:05 UTC",
             "%Y%m%dT%H%M%S": "20230102T030405",
-        }[fmt]
+        }[fmt],
     )
 
     backup_path = mirro.backup_original(original_path, original_content, backup_dir)
@@ -79,6 +83,7 @@ def test_backup_original(tmp_path, monkeypatch):
 # ============================================================
 # Helper to run main()
 # ============================================================
+
 
 def simulate_main(
     monkeypatch,
@@ -129,6 +134,7 @@ def simulate_main(
 # main: missing file argument
 # ============================================================
 
+
 def test_main_missing_argument(capsys):
     with patch("sys.argv", ["mirro"]):
         with pytest.raises(SystemExit):
@@ -140,6 +146,7 @@ def test_main_missing_argument(capsys):
 # ============================================================
 # main: unchanged file (line 137)
 # ============================================================
+
 
 def test_main_existing_unchanged(tmp_path, monkeypatch, capsys):
     target = tmp_path / "file.txt"
@@ -164,6 +171,7 @@ def test_main_existing_unchanged(tmp_path, monkeypatch, capsys):
 # main: changed file
 # ============================================================
 
+
 def test_main_existing_changed(tmp_path, monkeypatch, capsys):
     target = tmp_path / "file2.txt"
 
@@ -183,6 +191,7 @@ def test_main_existing_changed(tmp_path, monkeypatch, capsys):
 # ============================================================
 # main: new file unchanged
 # ============================================================
+
 
 def test_main_new_file_unchanged(tmp_path, monkeypatch, capsys):
     new = tmp_path / "new.txt"
@@ -204,6 +213,7 @@ def test_main_new_file_unchanged(tmp_path, monkeypatch, capsys):
 # main: new file changed
 # ============================================================
 
+
 def test_main_new_file_changed(tmp_path, monkeypatch, capsys):
     new = tmp_path / "new2.txt"
 
@@ -224,6 +234,7 @@ def test_main_new_file_changed(tmp_path, monkeypatch, capsys):
 # main: permission denied for existing file (line 78)
 # ============================================================
 
+
 def test_main_permission_denied_existing(tmp_path, monkeypatch, capsys):
     target = tmp_path / "blocked.txt"
     target.write_text("hello", encoding="utf-8")
@@ -242,6 +253,7 @@ def test_main_permission_denied_existing(tmp_path, monkeypatch, capsys):
 # ============================================================
 # main: permission denied creating file (line 84)
 # ============================================================
+
 
 def test_main_permission_denied_create(tmp_path, monkeypatch, capsys):
     newfile = tmp_path / "subdir" / "nofile.txt"
@@ -268,6 +280,7 @@ def test_main_permission_denied_create(tmp_path, monkeypatch, capsys):
 # ============================================================
 # main: non-nano editor (ordering branch)
 # ============================================================
+
 
 def test_main_editor_non_nano(tmp_path, monkeypatch, capsys):
     target = tmp_path / "vim.txt"
