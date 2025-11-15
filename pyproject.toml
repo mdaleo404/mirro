@@ -19,8 +19,6 @@ mirro = "mirro.main:main"
 pytest = "^9.0.1"
 pytest-cov = "^7.0.0"
 pre-commit = "^3.8"
-bandit = "^1.7"
-black = "^25.0"
 
 [tool.black]
 line-length = 79
