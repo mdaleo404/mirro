@@ -76,8 +76,58 @@ so under `sudo`:
 
 Backups are named like:
 ```
-filename.ext.orig.20251110T174400.bak
+filename.ext.orig.20251110T174400
 ```
+
+## Functionalities
+
+### List all backup files stored in your backup directory.
+```
+mirro --list
+```
+Output includes permissions, owner/group, timestamps, and backup filenames.
+
+### Restore the most recent backup for a given file.
+```
+mirro --restore-last ~/.config/myapp/config.ini
+```
+This:
+1. finds the newest backup matching the filename,
+
+2. strips the mirro header from it,
+
+3. and overwrites the target file with its original contents.
+
+### Remove old backup files.
+```
+mirro --prune-backups
+```
+This removes backups older than the number of days set in `MIRRO_BACKUPS_LIFE`.
+
+### Remove backups older than _N_ days
+```
+mirro --prune-backups=14
+```
+This keeps the last 14 days of backups and removes everything older.
+
+### Remove all backups
+```
+mirro --prune-backups=all
+```
+This deletes every backup in the backup directory.
+
+### Environment Variable
+`MIRRO_BACKUPS_LIFE` controls the default number of days to keep when using `mirro --prune-backups`.
+Its default value is **30** if not set otherwise.
+```
+export MIRRO_BACKUPS_LIFE=7
+```
+Backups older than 7 days will be removed.
+
+Invalid or non-numeric values fall back to 30 days.
+
+**Note:** _a value of 0 is **invalid**_.
+
 
 ## Installation
 
