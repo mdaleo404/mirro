@@ -31,7 +31,7 @@ def backup_original(
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
     shortstamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
 
-    backup_name = f"{original_path.name}.orig.{shortstamp}.bak"
+    backup_name = f"{original_path.name}.orig.{shortstamp}"
     backup_path = backup_dir / backup_name
 
     header = (

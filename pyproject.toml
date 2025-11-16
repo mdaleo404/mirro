@@ -15,7 +15,7 @@ python = "^3.13"
 [tool.poetry.scripts]
 mirro = "mirro.main:main"
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.dev-dependencies]
 pytest = "^9.0.1"
 pytest-cov = "^7.0.0"
 pre-commit = "^3.8"
