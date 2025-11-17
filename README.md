@@ -131,22 +131,41 @@ Invalid or non-numeric values fall back to 30 days.
 
 ## Installation
 
+### From package manager
+
+This is the preferred method of installation.
+
+**Ubuntu 22.04 and 24.04**
+```
+sudo add-apt-repository ppa:mdaleo/mirro
+sudo apt update
+sudo apt install mirro
+```
+
+**Fedora 41, 42, 43**
+```
+sudo dnf copr enable mdaleo/mirro
+sudo dnf install resrm
+```
+
+### From PyPI
+
 **NOTE:** To use `mirro` with `sudo`, the path to `mirro` must be in the `$PATH` seen by `root`.\
 Either:
 
- * install `mirro` as `root` (_preferred_), or
+ * install `mirro` as `root`, or
  * add the path to `mirro` to the `secure_path` parameter in `/etc/sudoers`. For example, where `/home/user/.local/bin` is where `mirro` is:
 
 ``` bash
 Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/user/.local/bin"
 ```
 
-Install via PyPI (preferred):
+Install with:
 ```
 pip install mirro
 ```
 
-Or clone the repo and install locally:
+### From this repository
 ```
 git clone https://github.com/mdaleo404/mirro.git
 cd mirro/
