@@ -49,6 +49,39 @@ def test_write_file(tmp_path):
 
 
 # ============================================================
+# strip_mirro_header
+# ============================================================
+
+
+def test_strip_header_removes_header():
+    header_text = (
+        "# ---------------------------------------------------\n"
+        "# mirro backup\n"
+        "# something\n"
+        "# ---------------------------------------------------\n"
+        "\n"
+        "#!/bin/bash\n"
+        "echo hi\n"
+    )
+
+    out = mirro.strip_mirro_header(header_text)
+    assert out.startswith("#!/bin/bash")
+    assert "mirro backup" not in out
+
+
+def test_strip_header_preserves_shebang():
+    text = "#!/usr/bin/env python3\nprint('hi')\n"
+    out = mirro.strip_mirro_header(text)
+    assert out == text  # unchanged
+
+
+def test_strip_header_non_header_file():
+    text = "# just a comment\nvalue\n"
+    out = mirro.strip_mirro_header(text)
+    assert out == text
+
+
+# ============================================================
 # backup_original
 # ============================================================
 
@@ -352,11 +385,21 @@ def test_restore_last_success(tmp_path, capsys):
     d.mkdir()
     target = tmp_path / "t.txt"
 
+    mirro_header = (
+        "# ---------------------------------------------------\n"
+        "# mirro backup\n"
+        "# Original file: x\n"
+        "# Timestamp: test\n"
+        "# Delete this header if you want to restore the file\n"
+        "# ---------------------------------------------------\n"
+        "\n"
+    )
+
     b1 = d / "t.txt.orig.2020"
     b2 = d / "t.txt.orig.2021"
 
-    b1.write_text("# header\n\nold1")
-    b2.write_text("# header\n\nold2")
+    b1.write_text(mirro_header + "old1")
+    b2.write_text(mirro_header + "old2")
 
     # ensure newest
     os.utime(b2, (time.time(), time.time()))
@@ -392,7 +435,7 @@ def test_prune_all(tmp_path, capsys):
     assert not any(d.iterdir())
 
 
-def test_prune_numeric(tmp_path, capsys, monkeypatch):
+def test_prune_numeric(tmp_path, capsys):
     d = tmp_path / "bk"
     d.mkdir()
 
@@ -418,7 +461,7 @@ def test_prune_numeric(tmp_path, capsys, monkeypatch):
         mirro.main()
 
     out = capsys.readouterr().out
-    assert "Removed 1 backup" in out
+    assert "Removed 1" in out
     assert new.exists()
     assert not old.exists()
 
@@ -463,3 +506,62 @@ def test_prune_invalid_arg(tmp_path, capsys):
 
     assert result == 1
     assert "Invalid value for --prune-backups" in capsys.readouterr().out
+
+
+# ============================================================
+# --diff tests
+# ============================================================
+
+
+def test_diff_basic(tmp_path, capsys):
+    d = tmp_path / "bk"
+    d.mkdir()
+
+    file = tmp_path / "t.txt"
+    file.write_text("line1\nline2\n")
+
+    backup = d / "t.txt.orig.20250101T010203"
+    backup.write_text(
+        "# ---------------------------------------------------\n"
+        "# mirro backup\n"
+        "# whatever\n"
+        "\n"
+        "line1\nold\n"
+    )
+
+    with patch(
+        "sys.argv",
+        ["mirro", "--diff", str(file), backup.name, "--backup-dir", str(d)],
+    ):
+        mirro.main()
+
+    out = capsys.readouterr().out
+
+    assert "--- a/t.txt" in out
+    assert "+++ b/t.txt" in out
+    assert "@@" in out
+    assert "-old" in out
+    assert "+line2" in out
+
+
+def test_diff_wrong_backup_name_rejected(tmp_path, capsys):
+    d = tmp_path / "bk"
+    d.mkdir()
+
+    file = tmp_path / "foo.txt"
+    file.write_text("hello\n")
+
+    bad = d / "bar.txt.orig.20250101T010203"
+    bad.write_text("stuff\n")
+
+    with patch(
+        "sys.argv",
+        ["mirro", "--diff", str(file), bad.name, "--backup-dir", str(d)],
+    ):
+        result = mirro.main()
+
+    out = capsys.readouterr().out
+
+    assert result == 1
+    assert "does not match the file being diffed" in out
+    assert "foo.txt.orig." in out
