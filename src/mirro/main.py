@@ -4,6 +4,7 @@ import tempfile
 import subprocess
 import os
 import textwrap
+import difflib
 from pathlib import Path
 import time
 
@@ -49,6 +50,31 @@ def backup_original(
     return backup_path
 
 
+def strip_mirro_header(text: str) -> str:
+    """
+    Strip only mirro's backup header (if present).
+    Never removes shebangs or anything else.
+    """
+    lines = text.splitlines(keepends=True)
+
+    # If there's no mirro header, return the text unchanged
+    if not lines or not lines[0].startswith(
+        "# ---------------------------------------------------"
+    ):
+        return text
+
+    # Otherwise skip all header lines until the first blank line
+    i = 0
+    while i < len(lines):
+        if lines[i].strip() == "":
+            i += 1  # skip the blank separator line
+            break
+        i += 1
+
+    # 'i' now points to the first real line of the original file
+    return "".join(lines[i:])
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Safely edit a file with automatic original backup if changed."
@@ -87,8 +113,84 @@ def main():
         help="Prune backups older than MIRRO_BACKUPS_LIFE days, or 'all' to delete all backups",
     )
 
+    parser.add_argument(
+        "--diff",
+        nargs=2,
+        metavar=("FILE", "BACKUP"),
+        help="Show a unified diff between FILE and BACKUP and exit",
+    )
+
     # Parse only options. Leave everything else untouched.
     args, positional = parser.parse_known_args()
+
+    if args.diff:
+        file_arg, backup_arg = args.diff
+
+        file_path = Path(file_arg).expanduser().resolve()
+
+        # Resolve backup: if it’s not absolute or ~, treat it as a filename in the backup dir
+        if os.path.isabs(backup_arg) or backup_arg.startswith("~"):
+            backup_path = Path(backup_arg).expanduser().resolve()
+        else:
+            backup_dir = Path(args.backup_dir).expanduser().resolve()
+            backup_path = backup_dir / backup_arg
+
+        if not file_path.exists():
+            print(f"File not found: {file_path}")
+            return 1
+        if not backup_path.exists():
+            print(f"Backup not found: {backup_path}")
+            return 1
+
+        # Enforce same base filename while diffing
+        target_name = file_path.name
+        backup_name = backup_path.name
+
+        if not backup_name.startswith(target_name + ".orig."):
+            print(
+                f"Error: Backup '{backup_name}' does not match the file being diffed.\n"
+                f"Expected backup file starting with: {target_name}.orig."
+            )
+            return 1
+
+        original = file_path.read_text(
+            encoding="utf-8", errors="replace"
+        ).splitlines()
+        backup_raw = backup_path.read_text(encoding="utf-8", errors="replace")
+
+        backup_stripped = strip_mirro_header(backup_raw)
+        backup = backup_stripped.splitlines()
+
+        # Generate a clean diff (no trailing line noise)
+        diff = difflib.unified_diff(
+            backup,
+            original,
+            fromfile=f"a/{file_path.name}",
+            tofile=f"b/{file_path.name}",
+            lineterm="",
+        )
+
+        # Colors
+        RED = "\033[31m"
+        GREEN = "\033[32m"
+        CYAN = "\033[36m"
+        RESET = "\033[0m"
+
+        for line in diff:
+            if (
+                line.startswith("---")
+                or line.startswith("+++")
+                or line.startswith("@@")
+            ):
+                print(f"{CYAN}{line}{RESET}")
+            elif line.startswith("+"):
+                print(f"{GREEN}{line}{RESET}")
+            elif line.startswith("-"):
+                print(f"{RED}{line}{RESET}")
+            else:
+                print(line)
+
+        return
 
     if args.list:
         import pwd, grp
@@ -171,39 +273,7 @@ def main():
 
         # read and strip header
         raw = last.read_text(encoding="utf-8", errors="replace")
-        lines = raw.splitlines(keepends=True)
-
-        restored = None
-
-        # Detect a mirro header only if the file begins with the header line
-        if lines and lines[0].startswith(
-            "# ---------------------------------------------------"
-        ):
-            restored = []
-            i = 0
-            # Skip until the first blank line AFTER the header block
-            while i < len(lines):
-                line = lines[i]
-                i += 1
-                # the header ends when we hit a blank line
-                if line.strip() == "":
-                    break
-            # i now points to the first real line of the original file
-            restored = lines[i:]
-        else:
-            # No header found — keep file verbatim
-            restored = lines
-
-        restored_text = "".join(restored)
-        target.write_text(restored_text, encoding="utf-8")
-
-        # if header wasn't present, restored = raw
-        if not restored:
-            restored_text = raw
-        else:
-            restored_text = "".join(restored)
-
-        # write the restored file back
+        restored_text = strip_mirro_header(raw)
         target.write_text(restored_text, encoding="utf-8")
 
         print(f"Restored {target} from backup {last.name}")

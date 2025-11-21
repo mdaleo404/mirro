@@ -128,6 +128,11 @@ Invalid or non-numeric values fall back to 30 days.
 
 **Note:** _a value of 0 is **invalid**_.
 
+### Built-in diff
+This shows a _git-like_ diff of the current file version and any of that file backups.
+```
+mirro --diff file file.orig.20251121T163121
+```
 
 ## Installation
 
