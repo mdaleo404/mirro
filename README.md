@@ -1,3 +1,10 @@
+![License](https://img.shields.io/github/license/mdaleo404/mirro)
+[![Language](https://img.shields.io/github/languages/top/mdaleo404/mirro.svg)](https://github.com/mdaleo404/mirro/)
+![GitHub Release](https://img.shields.io/github/v/release/mdaleo404/mirro?display_name=release&logo=github)
+![PyPI - Version](https://img.shields.io/pypi/v/mirro?logo=pypi)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mdaleo404/mirro/.github/workflows/lint-and-security.yml)](https://github.com/mdaleo404/mirro/actions)
+[![PyPI downloads](https://img.shields.io/pypi/dm/mirro.svg)](https://pypi.org/project/mirro/)
+
 # mirro
 
 **mirro** is a tiny safety-first editing wrapper for text files.
@@ -150,7 +157,7 @@ sudo apt install mirro
 **Fedora 41, 42, 43**
 ```
 sudo dnf copr enable mdaleo/mirro
-sudo dnf install resrm
+sudo dnf install mirro
 ```
 
 ### From PyPI
