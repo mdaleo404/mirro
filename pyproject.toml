@@ -5,8 +5,8 @@ description = "A safe editing wrapper: edits a temp copy, compares, and saves or
 authors = ["Marco D'Aleo <marco@marcodaleo.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://github.com/mdaleo404/mirro"
-repository = "https://github.com/mdaleo404/mirro"
+homepage = "https://github.com/guardutils/mirro"
+repository = "https://github.com/guardutils/mirro"
 packages = [{include = "mirro", from = "src"}]
 
 [tool.poetry.dependencies]

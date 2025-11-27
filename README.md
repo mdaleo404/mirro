@@ -1,8 +1,7 @@
-![License](https://img.shields.io/github/license/mdaleo404/mirro)
-[![Language](https://img.shields.io/github/languages/top/mdaleo404/mirro.svg)](https://github.com/mdaleo404/mirro/)
-![GitHub Release](https://img.shields.io/github/v/release/mdaleo404/mirro?display_name=release&logo=github)
+[![License](https://img.shields.io/github/license/guardutils/mirro?style=flat)](LICENCE)
+[![Language](https://img.shields.io/github/languages/top/guardutils/mirro.svg)](https://github.com/guardutils/mirro/)
+![GitHub Release](https://img.shields.io/github/v/release/guardutils/mirro?display_name=release&logo=github)
 ![PyPI - Version](https://img.shields.io/pypi/v/mirro?logo=pypi)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/mdaleo404/mirro/.github/workflows/lint-and-security.yml)](https://github.com/mdaleo404/mirro/actions)
 [![PyPI downloads](https://img.shields.io/pypi/dm/mirro.svg)](https://pypi.org/project/mirro/)
 
 # mirro
@@ -179,7 +178,7 @@ pip install mirro
 
 ### From this repository
 ```
-git clone https://github.com/mdaleo404/mirro.git
+git clone https://github.com/guardutils/mirro.git
 cd mirro/
 poetry install
 ```
