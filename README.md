@@ -1,7 +1,7 @@
 [![License](https://img.shields.io/github/license/guardutils/mirro?style=flat)](LICENCE)
 [![Language](https://img.shields.io/github/languages/top/guardutils/mirro.svg)](https://github.com/guardutils/mirro/)
-![GitHub Release](https://img.shields.io/github/v/release/guardutils/mirro?display_name=release&logo=github)
-![PyPI - Version](https://img.shields.io/pypi/v/mirro?logo=pypi)
+[![GitHub Release](https://img.shields.io/github/v/release/guardutils/mirro?display_name=release&logo=github)](https://github.com/guardutils/mirro/releases)
+[![PyPI - Version](https://img.shields.io/pypi/v/mirro?logo=pypi)](https://pypi.org/project/mirro/#history)
 [![PyPI downloads](https://img.shields.io/pypi/dm/mirro.svg)](https://pypi.org/project/mirro/)
 
 # mirro
