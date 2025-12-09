@@ -20,7 +20,7 @@ jobs:
         run: pip install pre-commit
 
       - name: Run pre-commit hooks
-        uses: pre-commit/action@v3.0.1
+        run: pre-commit run --all-files --color always
 
       - name: Install pip-audit
         run: pip install pip-audit
