@@ -176,7 +176,7 @@ The GPG fingerprint is `0032C71FA6A11EF9567D4434C5C06BD4603C28B1`.
 #### 2) Add the APT source
 
 ```bash
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/guardutils.gpg] https://repo.sysmd.uk debian main" | sudo tee /etc/apt/sources.list.d/guardutils.list
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/guardutils.gpg] https://repo.sysmd.uk/guardutils/debian stable main" | sudo tee /etc/apt/sources.list.d/guardutils.list
 ```
 
 #### 3) Update and install
@@ -199,14 +199,12 @@ sudo rpm --import https://repo.sysmd.uk/guardutils/guardutils.gpg
 ```
 sudo tee /etc/yum.repos.d/guardutils.repo > /dev/null << 'EOF'
 [guardutils]
-name = GuardUtils Repository
-baseurl = https://repo.sysmd.uk/rpm/$basearch
-
-enabled = 1
-gpgcheck = 1
-gpgkey = https://repo.sysmd.uk/guardutils/guardutils.gpg
-
-repo_gpgcheck = 1
+name=GuardUtils Repository
+baseurl=https://repo.sysmd.uk/guardutils/rpm/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://repo.sysmd.uk/guardutils/guardutils.gpg
 EOF
 ```
 
