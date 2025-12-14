@@ -234,7 +234,7 @@ pip install mirro
 
 ### From this repository
 ```
-git clone https://github.com/guardutils/mirro.git
+git clone https://git.sysmd.uk/guardutils/mirro.git
 cd mirro/
 poetry install
 ```
