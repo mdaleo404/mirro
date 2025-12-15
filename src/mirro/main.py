@@ -76,6 +76,19 @@ def strip_mirro_header(text: str) -> str:
     return "".join(lines[i:])
 
 
+def extract_original_path(backup_text: str) -> Path | None:
+    """
+    Extract the original file path from a mirro backup header.
+    """
+    for line in backup_text.splitlines():
+        if line.startswith("# Original file:"):
+            path = line.split(":", 1)[1].strip()
+            return Path(path).expanduser()
+        if line.strip() == "":
+            break
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Safely edit a file with automatic original backup if changed."
@@ -105,6 +118,13 @@ def main():
         metavar="FILE",
         type=str,
         help="Restore the last backup of the given file and exit",
+    )
+
+    parser.add_argument(
+        "--restore",
+        metavar="BACKUP",
+        type=str,
+        help="Restore the given backup file and exit",
     )
 
     parser.add_argument(
@@ -333,6 +353,45 @@ def main():
 
         print(f"Restored {target} from backup {last.name}")
         return
+
+    if args.restore:
+        backup_arg = args.restore
+        backup_dir = Path(args.backup_dir).expanduser().resolve()
+
+        # Resolve backup path
+        if os.path.isabs(backup_arg) or backup_arg.startswith("~"):
+            backup_path = Path(backup_arg).expanduser().resolve()
+        else:
+            backup_path = backup_dir / backup_arg
+
+        if not backup_path.exists():
+            print(f"Backup not found: {backup_path}")
+            return 1
+
+        raw = backup_path.read_text(encoding="utf-8", errors="replace")
+
+        target = extract_original_path(raw)
+        if not target:
+            print(
+                "Could not determine original file location from backup header."
+            )
+            return 1
+
+        restored_text = strip_mirro_header(raw)
+
+        # Permission checks
+        if target.exists() and not os.access(target, os.W_OK):
+            print(f"Need elevated privileges to restore {target}")
+            return 1
+        if not target.exists() and not os.access(target.parent, os.W_OK):
+            print(f"Need elevated privileges to create {target}")
+            return 1
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(restored_text, encoding="utf-8")
+
+        print(f"Restored {target} from backup {backup_path.name}")
+        return 0
 
     if args.prune_backups is not None:
         mode = args.prune_backups
