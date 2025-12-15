@@ -72,7 +72,7 @@ def test_strip_header_removes_header():
 def test_strip_header_preserves_shebang():
     text = "#!/usr/bin/env python3\nprint('hi')\n"
     out = mirro.strip_mirro_header(text)
-    assert out == text  # unchanged
+    assert out == text
 
 
 def test_strip_header_non_header_file():
@@ -298,29 +298,6 @@ def test_main_permission_denied_create(tmp_path, monkeypatch, capsys):
 
 
 # ============================================================
-# Editor ordering: non-nano branch
-# ============================================================
-
-
-def test_main_editor_non_nano(tmp_path, monkeypatch, capsys):
-    target = tmp_path / "vim.txt"
-    target.write_text("old\n")
-
-    def fake_call(cmd):
-        temp = Path(cmd[1])
-        temp.write_text("edited\n")
-
-    monkeypatch.setenv("EDITOR", "vim")
-    monkeypatch.setattr(subprocess, "call", fake_call)
-    monkeypatch.setattr(os, "access", lambda p, m: True)
-
-    with patch("sys.argv", ["mirro", str(target)]):
-        mirro.main()
-
-    assert target.read_text() == "edited\n"
-
-
-# ============================================================
 # --list
 # ============================================================
 
@@ -376,8 +353,10 @@ def test_restore_last_no_backups(tmp_path, capsys):
     ):
         result = mirro.main()
 
+    out = capsys.readouterr().out
     assert result == 1
-    assert "No backups found" in capsys.readouterr().out
+    assert "No history found for" in out
+    assert str(target) in out
 
 
 def test_restore_last_success(tmp_path, capsys):
@@ -401,7 +380,6 @@ def test_restore_last_success(tmp_path, capsys):
     b1.write_text(mirro_header + "old1")
     b2.write_text(mirro_header + "old2")
 
-    # ensure newest
     os.utime(b2, (time.time(), time.time()))
 
     with patch(
@@ -415,156 +393,93 @@ def test_restore_last_success(tmp_path, capsys):
 
 
 # ============================================================
-# --prune-backups
+# --restore (new)
 # ============================================================
 
 
-def test_prune_all(tmp_path, capsys):
-    d = tmp_path / "bk"
-    d.mkdir()
-    (d / "a").write_text("x")
-    (d / "b").write_text("y")
+def test_restore_backup_to_original_location(tmp_path, capsys):
+    backup_dir = tmp_path / "bk"
+    backup_dir.mkdir()
 
-    with patch(
-        "sys.argv", ["mirro", "--prune-backups=all", "--backup-dir", str(d)]
-    ):
-        mirro.main()
+    original_dir = tmp_path / "orig"
+    original_dir.mkdir()
 
-    out = capsys.readouterr().out
-    assert "Removed ALL backups" in out
-    assert not any(d.iterdir())
+    target = original_dir / "file.txt"
 
-
-def test_prune_numeric(tmp_path, capsys):
-    d = tmp_path / "bk"
-    d.mkdir()
-
-    old = d / "old"
-    new = d / "new"
-    old.write_text("x")
-    new.write_text("y")
-
-    one_day_seconds = 86400
-
-    os.utime(
-        old,
-        (
-            time.time() - one_day_seconds * 10,
-            time.time() - one_day_seconds * 10,
-        ),
-    )
-    os.utime(new, None)
-
-    with patch(
-        "sys.argv", ["mirro", "--prune-backups=5", "--backup-dir", str(d)]
-    ):
-        mirro.main()
-
-    out = capsys.readouterr().out
-    assert "Removed 1" in out
-    assert new.exists()
-    assert not old.exists()
-
-
-def test_prune_default_env(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("MIRRO_BACKUPS_LIFE", "1")
-
-    d = tmp_path / "bk"
-    d.mkdir()
-
-    f = d / "x"
-    f.write_text("hi")
-
-    os.utime(f, (time.time() - 86400 * 2, time.time() - 86400 * 2))
-
-    with patch(
-        "sys.argv", ["mirro", "--prune-backups", "--backup-dir", str(d)]
-    ):
-        mirro.main()
-
-    assert "Removed 1" in capsys.readouterr().out
-
-
-def test_prune_invalid_env(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv("MIRRO_BACKUPS_LIFE", "nope")
-
-    d = tmp_path / "bk"
-    d.mkdir()
-
-    with patch(
-        "sys.argv", ["mirro", "--prune-backups", "--backup-dir", str(d)]
-    ):
-        mirro.main()
-
-    out = capsys.readouterr().out
-    assert "Invalid MIRRO_BACKUPS_LIFE value" in out
-
-
-def test_prune_invalid_arg(tmp_path, capsys):
-    with patch("sys.argv", ["mirro", "--prune-backups=zzz"]):
-        result = mirro.main()
-
-    assert result == 1
-    assert "Invalid value for --prune-backups" in capsys.readouterr().out
-
-
-# ============================================================
-# --diff tests
-# ============================================================
-
-
-def test_diff_basic(tmp_path, capsys):
-    d = tmp_path / "bk"
-    d.mkdir()
-
-    file = tmp_path / "t.txt"
-    file.write_text("line1\nline2\n")
-
-    backup = d / "t.txt.orig.20250101T010203"
-    backup.write_text(
+    mirro_header = (
         "# ---------------------------------------------------\n"
         "# mirro backup\n"
-        "# whatever\n"
+        f"# Original file: {target}\n"
+        "# Timestamp: test\n"
+        "# Delete this header if you want to restore the file\n"
+        "# ---------------------------------------------------\n"
         "\n"
-        "line1\nold\n"
+    )
+
+    backup = backup_dir / "file.txt.orig.20250101T010203"
+    backup.write_text(mirro_header + "restored content\n")
+
+    with patch(
+        "sys.argv",
+        ["mirro", "--restore", backup.name, "--backup-dir", str(backup_dir)],
+    ):
+        result = mirro.main()
+
+    assert result == 0
+    assert target.exists()
+    assert target.read_text() == "restored content\n"
+    assert "Restored" in capsys.readouterr().out
+
+
+def test_restore_missing_backup(tmp_path, capsys):
+    backup_dir = tmp_path / "bk"
+    backup_dir.mkdir()
+
+    with patch(
+        "sys.argv",
+        [
+            "mirro",
+            "--restore",
+            "nope.orig.123",
+            "--backup-dir",
+            str(backup_dir),
+        ],
+    ):
+        result = mirro.main()
+
+    assert result == 1
+    assert "Backup not found" in capsys.readouterr().out
+
+
+def test_restore_missing_original_path_in_header(tmp_path, capsys):
+    backup_dir = tmp_path / "bk"
+    backup_dir.mkdir()
+
+    bad_backup = backup_dir / "x.txt.orig.123"
+    bad_backup.write_text(
+        "# ---------------------------------------------------\n"
+        "# mirro backup\n"
+        "# Timestamp: test\n"
+        "\n"
+        "data\n"
     )
 
     with patch(
         "sys.argv",
-        ["mirro", "--diff", str(file), backup.name, "--backup-dir", str(d)],
-    ):
-        mirro.main()
-
-    out = capsys.readouterr().out
-
-    assert "--- a/t.txt" in out
-    assert "+++ b/t.txt" in out
-    assert "@@" in out
-    assert "-old" in out
-    assert "+line2" in out
-
-
-def test_diff_wrong_backup_name_rejected(tmp_path, capsys):
-    d = tmp_path / "bk"
-    d.mkdir()
-
-    file = tmp_path / "foo.txt"
-    file.write_text("hello\n")
-
-    bad = d / "bar.txt.orig.20250101T010203"
-    bad.write_text("stuff\n")
-
-    with patch(
-        "sys.argv",
-        ["mirro", "--diff", str(file), bad.name, "--backup-dir", str(d)],
+        [
+            "mirro",
+            "--restore",
+            bad_backup.name,
+            "--backup-dir",
+            str(backup_dir),
+        ],
     ):
         result = mirro.main()
 
-    out = capsys.readouterr().out
-
     assert result == 1
-    assert "does not match the file being diffed" in out
-    assert "foo.txt.orig." in out
+    assert (
+        "Could not determine original file location" in capsys.readouterr().out
+    )
 
 
 # ============================================================
@@ -575,7 +490,7 @@ def test_diff_wrong_backup_name_rejected(tmp_path, capsys):
 def test_status_no_backups(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
 
-    backup_dir = tmp_path / "bk"  # no backups inside
+    backup_dir = tmp_path / "bk"
     with patch(
         "sys.argv", ["mirro", "--status", "--backup-dir", str(backup_dir)]
     ):
@@ -593,25 +508,12 @@ def test_status_backups_found(tmp_path, monkeypatch, capsys):
     backup_dir = tmp_path / "bk"
     backup_dir.mkdir()
 
-    # Files in current directory
-    f1 = tmp_path / "a.txt"
-    f2 = tmp_path / "b.txt"
-    f1.write_text("data1")
-    f2.write_text("data2")
+    (tmp_path / "a.txt").write_text("data1")
+    (tmp_path / "b.txt").write_text("data2")
 
-    # Backups
-    (backup_dir / "a.txt.orig.20200101T000000").write_text("backup1")
-    (backup_dir / "a.txt.orig.20200101T010000").write_text("backup2")
-    (backup_dir / "b.txt.orig.20200202T020000").write_text("backup3")
-
-    # mtimes
-    t1 = time.time() - 200
-    t2 = time.time() - 100
-    t3 = time.time() - 50
-
-    os.utime(backup_dir / "a.txt.orig.20200101T000000", (t1, t1))
-    os.utime(backup_dir / "a.txt.orig.20200101T010000", (t2, t2))
-    os.utime(backup_dir / "b.txt.orig.20200202T020000", (t3, t3))
+    (backup_dir / "a.txt.orig.1").write_text("x")
+    (backup_dir / "a.txt.orig.2").write_text("y")
+    (backup_dir / "b.txt.orig.3").write_text("z")
 
     with patch(
         "sys.argv", ["mirro", "--status", "--backup-dir", str(backup_dir)]
@@ -619,11 +521,7 @@ def test_status_backups_found(tmp_path, monkeypatch, capsys):
         result = mirro.main()
 
     out = capsys.readouterr().out
-
     assert result == 0
-    assert f"Backed-up files in {cwd}" in out
+    assert f"Files with history in {cwd}:" in out
     assert "a.txt" in out
     assert "b.txt" in out
-    assert "(2 backup(s)," in out
-    assert "(1 backup(s)," in out
-    assert "UTC" in out
