@@ -104,6 +104,13 @@ This:
 
 3. and overwrites the target file with its original contents.
 
+### Restore ANY backup
+
+```
+mirro --restore filename.ext.orig.20251110T174400
+Restored /path/to/filename.ext from backup filename.ext.orig.20251110T174400
+```
+
 ### Remove old backup files.
 
 ```

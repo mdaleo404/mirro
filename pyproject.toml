@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mirro"
-version = "0.5.0"
+version = "0.6.0"
 description = "A safe editing wrapper: edits a temp copy, compares, and saves original backup if changed."
 authors = ["Marco D'Aleo <marco@marcodaleo.com>"]
 license = "GPL-3.0-or-later"
