@@ -4,6 +4,10 @@
 
 # mirro
 
+<div align="center">
+  <img src="mirro.png" alt="mirro logo" width="256" />
+</div>
+
 **mirro** is a tiny safety-first editing wrapper for text files.
 You edit a temporary file, **mirro** detects whether anything changed, and if it did, it saves a backup of the original before writing your changes.
 
