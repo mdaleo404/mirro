@@ -16,7 +16,7 @@ argcomplete = ">=2"
 [tool.poetry.scripts]
 mirro = "mirro.main:main"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^9.0.1"
 pytest-cov = "^7.0.0"
 pre-commit = "^3.8"
