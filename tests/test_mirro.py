@@ -174,6 +174,17 @@ def test_main_missing_argument(capsys):
     )
 
 
+def test_main_rejects_directory(tmp_path, capsys):
+    target = tmp_path / "dir"
+    target.mkdir()
+
+    with patch("sys.argv", ["mirro", str(target)]):
+        result = mirro.main()
+
+    assert result == 1
+    assert f"'{target}' is a directory!" in capsys.readouterr().out
+
+
 # ============================================================
 # main: unchanged file
 # ============================================================
