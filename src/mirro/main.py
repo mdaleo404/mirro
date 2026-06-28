@@ -491,6 +491,10 @@ def main():
     target = Path(file_arg).expanduser().resolve()
     backup_dir = Path(args.backup_dir).expanduser().resolve()
 
+    if target.is_dir():
+        print(f"'{target}' is a directory!")
+        return 1
+
     # Permission checks
     parent = target.parent
     if target.exists() and not os.access(target, os.W_OK):
