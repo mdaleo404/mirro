@@ -1,6 +1,6 @@
 [project]
 name = "mirro"
-version = "0.6.3"
+version = "0.6.4"
 description = "A safe editing wrapper: edits a temp copy, compares, and saves original backup if changed."
 authors = [{ name = "Marco D'Aleo", email = "marco@marcodaleo.com" }]
 license = "GPL-3.0-or-later"
