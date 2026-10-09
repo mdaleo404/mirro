@@ -23,7 +23,7 @@ packages = [{include = "mirro", from = "src"}]
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.1"
 pytest-cov = "^7.0.0"
-pre-commit = "^3.8"
+pre-commit = "^4.0.0"
 
 [tool.black]
 line-length = 79
